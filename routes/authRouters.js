@@ -4,7 +4,7 @@ import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import validateBody from "../helpers/validateBody.js";
 import auth from "../middlewares/auth.js";
 
-import { registerAuthSchema, loginAuthSchema } from "../schemas/authSchemas.js";
+import { registerAuthSchema, loginAuthSchema } from "../schemas/authShemas.js";
 
 import {
   register,
