@@ -6,8 +6,10 @@ import {
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 import { updateFavoriteSchema } from "../schemas/contactsSchemas.js";
+import auth from "../middlewares/auth.js";
 
 const contactsRouter = express.Router();
+contactsRouter.use(auth);
 
 contactsRouter.get("/", contactsController.getAllContactsController);
 
