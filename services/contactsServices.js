@@ -1,31 +1,65 @@
 import Contact from "../db/Contacts.js";
 
-export const listContacts = () => Contact.findAll();
+export async function listContacts({ owner }) {
+  return await Contact.findAll({
+    where: {
+      owner,
+    },
+  });
+}
 
-export const getContactById = (id) => Contact.findByPk(id);
+export async function getContactById({ id, owner }) {
+  const contact = await Contact.findOne({
+    where: {
+      id,
+      owner,
+    },
+  });
+  return contact || null;
+}
 
-export const addContact = (payload) => Contact.create(payload);
+export async function addContact(data) {
+  return Contact.create({ ...data });
+}
 
-export const updateContact = async (contactId, data) => {
-  const contact = await getContactById(contactId);
+export async function updateContact({ id, owner }, data) {
+  const contact = await getContactById({ id, owner });
+
   if (!contact) return null;
 
-  await contact.update(data);
+  return await contact.update(data, {
+    returning: true,
+  });
+}
+
+export async function removeContact({ id, owner }) {
+  const contact = await getContactById({ id, owner });
+
+  if (!contact) return null;
+
+  await Contact.destroy({
+    where: {
+      id,
+    },
+  });
   return contact;
+}
+
+export const updateStatusContact = async ({ id, owner }, data) => {
+  const contact = await getContactById({ id, owner });
+
+  if (!contact) return null;
+
+  return await contact.update(data, {
+    returning: true,
+  });
 };
 
-export const removeContact = async (contactId) => {
-  const contact = await getContactById(contactId);
-  if (!contact) return null;
-
-  await contact.destroy();
-  return contact;
-};
-
-export const updateStatusContact = async (contactId, data) => {
-  const contact = await Contact.findByPk(contactId);
-  if (!contact) return null;
-
-  await contact.update(data);
-  return contact;
+export default {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContact,
+  updateStatusContact,
 };

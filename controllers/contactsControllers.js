@@ -3,13 +3,15 @@ import HttpError from "./../helpers/HttpError.js";
 import ctrlWrapper from "../helpers/ctrlWrapper.js";
 
 const getAllContactsController = async (req, res) => {
-  const result = await contactsServices.listContacts();
+  const { id: owner } = req.user;
+  const result = await contactsServices.listContacts({ owner });
   res.json(result);
 };
 
 const getOneContactController = async (req, res) => {
+  const { id: owner } = req.user;
   const { id } = req.params;
-  const result = await contactsServices.getContactById(id);
+  const result = await contactsServices.getContactById({ id, owner });
 
   if (!result) {
     throw HttpError(404, "Not found");
@@ -19,8 +21,9 @@ const getOneContactController = async (req, res) => {
 };
 
 const deleteContactController = async (req, res) => {
+  const { id: owner } = req.user;
   const { id } = req.params;
-  const result = await contactsServices.removeContact(id);
+  const result = await contactsServices.removeContact({ id, owner });
 
   if (!result) {
     throw HttpError(404, "Not found");
@@ -30,14 +33,16 @@ const deleteContactController = async (req, res) => {
 };
 
 const createContactController = async (req, res) => {
-  const result = await contactsServices.addContact(req.body);
+  const { id: owner } = req.user;
+  const result = await contactsServices.addContact({ ...req.body, owner });
 
   res.status(201).json(result);
 };
 
 const updateContactController = async (req, res) => {
+  const { id: owner } = req.user;
   const { id } = req.params;
-  const result = await contactsServices.updateContact(id, req.body);
+  const result = await contactsServices.updateContact({ id, owner }, req.body);
 
   if (!result) {
     throw HttpError(404, "Not found");
@@ -47,6 +52,7 @@ const updateContactController = async (req, res) => {
 };
 
 const updateStatusContactController = async (req, res) => {
+  const { id: owner } = req.user;
   const { id } = req.params;
   const { favorite } = req.body;
 
@@ -54,7 +60,10 @@ const updateStatusContactController = async (req, res) => {
     throw HttpError(400, "Missing or invalid 'favorite' field");
   }
 
-  const result = await contactsServices.updateStatusContact(id, { favorite });
+  const result = await contactsServices.updateStatusContact(
+    { id, owner },
+    { favorite }
+  );
 
   if (!result) {
     throw HttpError(404, "Not found");
