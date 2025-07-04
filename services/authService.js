@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import gravatar from "gravatar";
 
 import User from "../db/User.js";
 import HttpError from "../helpers/HttpError.js";
@@ -9,6 +10,15 @@ const findUserByEmail = async (email) => {
     where: {
       email,
     },
+  });
+};
+
+export const updateUser = async (userId, data) => {
+  const user = await findUserById(userId);
+  if (!user) return null;
+
+  return user.update(data, {
+    returning: true,
   });
 };
 
@@ -24,7 +34,8 @@ export const addUser = async (payload) => {
   }
 
   const password = await bcrypt.hash(payload.password, 10);
-  return await User.create({ ...payload, password });
+  const avatarURL = gravatar.url(email, { s: "250" }, true);
+  return await User.create({ ...payload, password, avatarURL });
 };
 
 export const login = async (payload) => {
