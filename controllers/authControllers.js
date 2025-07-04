@@ -4,12 +4,15 @@ import * as authServices from "../services/authService.js";
 import HttpError from "../helpers/HttpError.js";
 
 export const register = async (req, res) => {
-  const { email, subscription } = await authServices.addUser(req.body);
+  const { email, subscription, avatarURL } = await authServices.addUser(
+    req.body
+  );
 
   res.status(201).json({
     user: {
       email,
       subscription,
+      avatarURL,
     },
   });
 };
@@ -27,11 +30,12 @@ export const logout = async (req, res) => {
 };
 
 export const current = async (req, res) => {
-  const { email, subscription } = req.user;
+  const { email, subscription, avatarURL } = req.user;
 
-  res.json({
+  res.status(200).json({
     email,
     subscription,
+    avatarURL,
   });
 };
 
