@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import * as authServices from "../services/authService.js";
 import HttpError from "../helpers/HttpError.js";
+import { sendVerificationEmail } from "../services/emailService.js";
 
 export const register = async (req, res) => {
   const { email, subscription, avatarURL } = await authServices.addUser(
@@ -67,4 +68,21 @@ export const updateAvatar = async (req, res) => {
 
     throw HttpError(500, "Error saving avatar");
   }
+};
+
+export const verify = async (req, res) => {
+  const { verificationToken } = req.params;
+  await authServices.verifyUser(verificationToken);
+
+  res.json({
+    message: "Verification successful",
+  });
+};
+
+export const sendVerify = async (req, res) => {
+  const { email } = req.body;
+  await authServices.sendVerify(email);
+  res.json({
+    message: "Verification email sent",
+  });
 };

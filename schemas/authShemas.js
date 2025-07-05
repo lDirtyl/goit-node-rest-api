@@ -11,3 +11,7 @@ export const loginAuthSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(PASSWORD_MIN).required(),
 });
+
+export const verifyAuthSchema = Joi.object({
+  email: Joi.string().email().required(),
+});

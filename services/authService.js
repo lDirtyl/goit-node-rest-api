@@ -3,13 +3,20 @@ import gravatar from "gravatar";
 
 import User from "../db/User.js";
 import HttpError from "../helpers/HttpError.js";
-import { createToken } from "../helpers/auth.js";
+import { createToken, createVerificationToken } from "../helpers/auth.js";
+import { sendVerificationEmail } from "./emailService.js";
 
 const findUserByEmail = async (email) => {
   return await User.findOne({
     where: {
       email,
     },
+  });
+};
+
+const findUser = async (filter) => {
+  return await User.findOne({
+    where: filter,
   });
 };
 
@@ -35,7 +42,22 @@ export const addUser = async (payload) => {
 
   const password = await bcrypt.hash(payload.password, 10);
   const avatarURL = gravatar.url(email, { s: "250" }, true);
-  return await User.create({ ...payload, password, avatarURL });
+  const verificationToken = createVerificationToken();
+  const newUser = await User.create({
+    ...payload,
+    password,
+    avatarURL,
+    verificationToken,
+  });
+
+  await sendVerificationEmail(email, verificationToken);
+  // return newUser;
+  return {
+    email: newUser.email,
+    subscription: newUser.subscription,
+    avatarURL: newUser.avatarURL,
+    verificationToken,
+  };
 };
 
 export const login = async (payload) => {
@@ -50,6 +72,10 @@ export const login = async (payload) => {
 
   if (!passwordIsValid) {
     throw HttpError(401, "Email or password is wrong");
+  }
+
+  if (!user.verify) {
+    throw HttpError(401, "Email not verified");
   }
 
   const token = createToken({ id: user.id, email });
@@ -72,4 +98,29 @@ export const logout = async (id) => {
   }
 
   await user.update({ token: null });
+};
+
+export const verifyUser = async (verificationToken) => {
+  const user = await findUser({ verificationToken });
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  user.update({
+    verificationToken: null,
+    verify: true,
+  });
+};
+
+export const sendVerify = async (email) => {
+  const user = await findUser({ email });
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+
+  await sendVerificationEmail(email, user.verificationToken);
 };
