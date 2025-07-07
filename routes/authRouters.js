@@ -5,7 +5,11 @@ import validateBody from "../helpers/validateBody.js";
 import auth from "../middlewares/auth.js";
 import upload from "../middlewares/upload.js";
 
-import { registerAuthSchema, loginAuthSchema } from "../schemas/authShemas.js";
+import {
+  registerAuthSchema,
+  loginAuthSchema,
+  verifyAuthSchema,
+} from "../schemas/authShemas.js";
 
 import {
   register,
@@ -13,6 +17,8 @@ import {
   current,
   logout,
   updateAvatar,
+  sendVerify,
+  verify,
 } from "../controllers/authControllers.js";
 
 const authRouter = express.Router();
@@ -34,6 +40,14 @@ authRouter.patch(
   auth,
   upload.single("avatar"),
   ctrlWrapper(updateAvatar)
+);
+
+authRouter.get("/verify/:verificationToken", ctrlWrapper(verify));
+
+authRouter.post(
+  "/verify",
+  validateBody(verifyAuthSchema),
+  ctrlWrapper(sendVerify)
 );
 
 export default authRouter;
